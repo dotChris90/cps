@@ -31,12 +31,6 @@ pip:
     - name: metrixpp
       version: 1.7.1
 cmake:
-  executables:
-    - name: main
-      srcs:
-        - src/main.cpp
-      links:
-        - Hello
   libraries:
     - name: Hello
       srcs:

@@ -1,12 +1,11 @@
 export class Executable {
+  name = "";
 
-    name = "";
+  srcs: string[] = [];
 
-    src : string[] = [];
+  links: string[] = [];
 
-    req : string[] = [];
-
-    public constructor(init?: Partial<Executable>) {
-        Object.assign(this, init);
-     }
+  public constructor(init?: Partial<Executable>) {
+    Object.assign(this, init);
+  }
 }

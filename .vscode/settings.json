@@ -1,0 +1,7 @@
+{
+    "javascript.format.insertSpaceAfterConstructor": true,
+    "typescript.autoClosingTags": true,
+    "typescript.format.enable": true,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+}

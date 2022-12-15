@@ -1,0 +1,9 @@
+name: abc
+version: 1.2.3
+license: MIT
+author:
+url:
+description:
+topics:
+  - dds
+  - ipc

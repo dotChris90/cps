@@ -1,10 +1,11 @@
 export class Tool {
+  name = "";
 
-    name = "";
+  version = "";
 
-    version = "";
+  options = new Map<string, string>();
 
-    public constructor(init?: Partial<Tool>) {
-        Object.assign(this, init);
-    }
+  public constructor(init?: Partial<Tool>) {
+    Object.assign(this, init);
+  }
 }

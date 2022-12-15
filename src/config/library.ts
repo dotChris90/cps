@@ -1,14 +1,13 @@
 export class Library {
+  name = "";
 
-    name = "";
+  srcs: string[] = [];
 
-    src : string[] = [];
+  links: string[] = [];
 
-    inc : string[] = [];
+  incs: string[] = [];
 
-    req : string[] = [];
-
-    public constructor(init?: Partial<Library>) {
-        Object.assign(this, init);
-     }
+  public constructor(init?: Partial<Library>) {
+    Object.assign(this, init);
+  }
 }
