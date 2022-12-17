@@ -22,6 +22,16 @@ describe("config-manager", () => {
 
       configManager.addCMakeExe("main", ["src/main.cpp"], []);
       expect(cpsObj.cmake.executables.length).toBe(1);
+      expect(cpsObj.cmake.executables[0].srcs.length).toBe(1);
+      expect(cpsObj.cmake.executables[0].links.length).toBe(0);
+      configManager.addCMakeExeSrc("main", "src/greet.cpp");
+      configManager.addCMakeExeLink("main", "a::a");
+      expect(cpsObj.cmake.executables[0].srcs.length).toBe(2);
+      expect(cpsObj.cmake.executables[0].links.length).toBe(1);
+      configManager.rmCMakeExeSrc("main", "src/greet.cpp");
+      configManager.rmCMakeExeLink("main", "a::a");
+      expect(cpsObj.cmake.executables[0].srcs.length).toBe(1);
+      expect(cpsObj.cmake.executables[0].links.length).toBe(0);
       configManager.rmCMakeExe("main");
       expect(cpsObj.cmake.executables.length).toBe(0);
 
@@ -32,6 +42,17 @@ describe("config-manager", () => {
         []
       );
       expect(cpsObj.cmake.libraries.length).toBe(1);
+      expect(cpsObj.cmake.libraries[0].srcs.length).toBe(1);
+      expect(cpsObj.cmake.libraries[0].links.length).toBe(0);
+      expect(cpsObj.cmake.libraries[0].incs.length).toBe(1);
+      configManager.addCMakeLibSrc("main", "src/greet.cpp");
+      configManager.addCMakeLibLink("main", "a::a");
+      expect(cpsObj.cmake.libraries[0].srcs.length).toBe(2);
+      expect(cpsObj.cmake.libraries[0].links.length).toBe(1);
+      configManager.rmCMakeLibSrc("main", "src/greet.cpp");
+      configManager.rmCMakeLibLink("main", "a::a");
+      expect(cpsObj.cmake.libraries[0].srcs.length).toBe(1);
+      expect(cpsObj.cmake.libraries[0].links.length).toBe(0);
       configManager.rmCMakeLib("main");
       expect(cpsObj.cmake.libraries.length).toBe(0);
     });
@@ -62,6 +83,18 @@ describe("config-manager", () => {
       expect(cpsObj.conan.options[0].default).toBe("false");
       configManager.rmConanOption("shared");
       expect(cpsObj.conan.options.length).toBe(0);
+    });
+
+    it("shall manage pip config", async () => {
+      const cpsPath = path.join(__filename, "..", "data", "min.yml");
+      const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
+
+      const configManager = new ConfigManager(cpsObj);
+      configManager.addPipPackage("abc", "1.2.3");
+      expect(cpsObj.pip.tools.length).toBe(1);
+      expect(cpsObj.pip.tools[0].name).toBe("abc");
+      configManager.rmPipPackage("abc");
+      expect(cpsObj.pip.tools.length).toBe(0);
     });
   });
 });

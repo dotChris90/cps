@@ -4,12 +4,48 @@ import { Package } from "./package";
 import { Option } from "./option";
 import { Tool } from "./tool";
 import { Library } from "./library";
+import { Pip } from "./pip";
 
 export class ConfigManager {
   public config: CPSConfig;
 
   constructor(config: CPSConfig) {
     this.config = config;
+  }
+
+  SetMinimalData(
+    name: string,
+    version: string,
+    license: string,
+    author: string,
+    url: string,
+    description: string,
+    topics: string[]
+  ) {
+    this.config.name = name;
+    this.config.description = description;
+    this.config.version = version;
+    this.config.license = license;
+    this.config.author = author;
+    this.config.url = url;
+    this.config.topics = topics;
+  }
+
+  addPipPackage(name: string, version: string) {
+    if (this.config.pip.tools.filter((e) => e.name === name).length === 0) {
+      const pipPkg = new Tool();
+      pipPkg.name = name;
+      pipPkg.version = version;
+      this.config.pip.tools.push(pipPkg);
+    }
+  }
+
+  rmPipPackage(name: string) {
+    if (this.config.pip.tools.filter((e) => e.name === name).length > 0) {
+      const tool = this.config.pip.tools.filter((e) => e.name === name)[0];
+      const idx = this.config.pip.tools.indexOf(tool);
+      if (idx > -1) this.config.pip.tools.splice(idx, 1);
+    }
   }
 
   addCMakeExe(name: string, srcs: string[], links: string[]) {
