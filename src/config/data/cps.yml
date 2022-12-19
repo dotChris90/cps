@@ -31,6 +31,8 @@ pip:
     - name: metrixpp
       version: 1.7.1
 cmake:
+  packages:
+    - fmt
   executables:
     - name: main
       srcs:

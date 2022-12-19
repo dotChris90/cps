@@ -8,9 +8,9 @@ import * as path from "path";
 import * as os from "os";
 import { ConfigManager } from "../config/config-manager";
 import { CPSConfig } from "../config/cps-config";
-import { ConanfileGenerator } from "./conanfile-generator";
+import { CMakeGenerator } from "./cmakefile-generator";
 
-describe("conanfile-generator", () => {
+describe("cmakefile-generator", () => {
   describe("test", () => {
     it("shall get full config object", async () => {
       const cpsPath = path.join(
@@ -21,20 +21,20 @@ describe("conanfile-generator", () => {
         "data",
         "cps.yml"
       );
-      const cmpConanfile = path.join(__filename, "..", "data", "conanfile.py");
+      const cmpCMake =  path.join(__filename, "..", "data", "CMakeLists.txt");
       const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
       const manager = new ConfigManager(cpsObj);
 
-      const gen = new ConanfileGenerator(manager);
+      const gen = new CMakeGenerator(manager);
 
-      const prefix = "conanfile-test";
+      const prefix = "cmake-test";
 
       const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
-      const tmpConanFile = path.join(tmpDir, "conanfile.py");
+      const tmpConanFile = path.join(tmpDir, "CMakeLists.txt");
 
-      gen.generateConanfilePy(tmpConanFile);
+      gen.generateCMakeFileTxt(tmpConanFile);
 
-      const desiredContent = fse.readFileSync(cmpConanfile).toString();
+      const desiredContent = fse.readFileSync(cmpCMake).toString();
       const writtenContent = fse.readFileSync(tmpConanFile).toString();
 
       expect(writtenContent).toBe(desiredContent);

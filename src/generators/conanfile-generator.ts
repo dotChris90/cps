@@ -17,20 +17,18 @@ export class ConanfileGenerator {
     );
   }
 
-  public generateConanfile(fileDst: string) {
+  public generateConanfilePy(fileDst: string) {
     let templateContent = fse.readFileSync(this.templateFile).toString();
     let config = this.configManager.config;
     const topics = " (\n$ARGS\n    )".replace(
       "$ARGS",
       '    "' + config.topics.join('",\n    "') + '"'
     );
-    let options = "options = {}";
-    let defaultOptions = "default_options = {}";
+    let options = "options = {}\n";
+    let defaultOptions = "default_options = {}\n";
     if (config.conan.options.length === 0) {
       // pass
     } else {
-      options = `${options}\n`;
-      defaultOptions = `${defaultOptions}\n`;
       for (let option of config.conan.options) {
         options = `${options}    options["${
           option.name
@@ -84,5 +82,9 @@ export class ConanfileGenerator {
       .replace("    {{build_requirements}}", buildRequiresMethod);
 
     fse.writeFileSync(fileDst, templateContent);
+  }
+
+  public generateConanfileTxt(fileDst : string) {
+    
   }
 }
