@@ -6,6 +6,8 @@ export class CMake {
 
   libraries: Library[] = [];
 
+  packages : string[] = [];
+
   public constructor(init?: Partial<CMake>) {
     Object.assign(this, init);
     for (let idx = 0; idx < this.executables.length; idx++) {

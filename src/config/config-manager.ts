@@ -9,8 +9,11 @@ import { Pip } from "./pip";
 export class ConfigManager {
   public config: CPSConfig;
 
-  constructor(config: CPSConfig) {
+  public ymlFilePath : string;
+
+  constructor(config: CPSConfig, ymlFilePath : string) {
     this.config = config;
+    this.ymlFilePath = ymlFilePath;
   }
 
   SetMinimalData(
@@ -211,5 +214,9 @@ export class ConfigManager {
       const idx = this.config.conan.options.indexOf(opt, 0);
       this.config.conan.options.splice(idx, 1);
     }
+  }
+
+  public static createFromYmlFile(ymlFile : string) {
+    return (new ConfigManager(CPSConfig.createFromYMLFile(ymlFile),ymlFile));
   }
 }

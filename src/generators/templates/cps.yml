@@ -1,0 +1,53 @@
+name: {{name}}
+version: {{version}}
+license: {{license}}
+author:
+url:
+description:
+topics:
+  - topic1
+conan:
+  options:
+    - name: shared
+      values:
+        - true
+        - false
+      default: false
+    - name: fPIC
+      values:
+        - true
+        - false
+      default: true
+  packages:
+    - name: fmt
+      version: 8.1.1
+      options:
+        header_only: true
+  tools:
+    - name: doxygen
+      version: 1.9.4
+    - name: cppcheck
+      version: 2.7.5
+pip:
+  tools:
+    - name: conan
+      version: 1.55
+    - name: metrixpp
+      version: 1.7.1
+cmake:
+  packages:
+    - fmt
+  executables:
+    - name: {{name}}::main
+      srcs:
+        - src/main.cpp
+      links:
+        - {{name}}::Hello
+  libraries:
+    - name: {{name}}::Hello
+      srcs:
+        - src/Greeter.cpp
+      incs:
+        - src/Greeter.hpp
+      links:
+        - fmt::fmt

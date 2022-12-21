@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as cmdExist from 'command-exists';
 import * as fse from "fs-extra";
 import { ConfigManager } from "../config/config-manager";
 
@@ -10,6 +11,8 @@ export class CMakeGenerator {
   doxygenFile: string;
 
   cppcheckFile: string;
+
+  metrixppFile: string;
 
   public constructor(cpsConfigManager: ConfigManager) {
     this.configManager = cpsConfigManager;
@@ -31,9 +34,15 @@ export class CMakeGenerator {
         "templates",
         "cppcheck.cmake"
       );
+      this.metrixppFile = path.join(
+        __filename,
+        "..",
+        "templates",
+        "metrixpp.cmake"
+      );
   }
 
-  public generateCMakeFileTxt(dstFile : string) {
+  public generateCMakeFileTxt(dstFolder : string) {
     let templateContent = fse.readFileSync(this.templateFile).toString();
 
     let packages = "";
@@ -105,18 +114,21 @@ export class CMakeGenerator {
                                      .replace('"${headers}"', incs)
                                      .replace('"${install}"', install);
     
-    fse.writeFileSync(dstFile, templateContent);
+    fse.writeFileSync(path.join(dstFolder,"CMakeLists.txt"), templateContent);
   }
   
-  public generateCPSCMakeModule(dstFile : string) {
+  public generateCPSCMakeModule(dstFolder : string) {
     const cfg = this.configManager.config;
     let cpsModuleContent = "";
-    if (cfg.conan.tools.filter(e => e.name === "doxygen").length > 0) {
+    if (cfg.conan.tools.filter(e => e.name === "doxygen").length > 0 || cmdExist.sync("doxygen")) {
         cpsModuleContent = `${cpsModuleContent}${fse.readFileSync(this.doxygenFile).toString()}`
     }
-    if (cfg.conan.tools.filter(e => e.name === "cppcheck").length > 0) {
+    if (cfg.conan.tools.filter(e => e.name === "cppcheck").length > 0 || cmdExist.sync("cppcheck")) {
         cpsModuleContent = `${cpsModuleContent}${fse.readFileSync(this.cppcheckFile).toString()}`
     }
-    fse.writeFileSync(dstFile, cpsModuleContent);
+    if (cfg.pip.tools.filter(e => e.name === "metrixpp").length > 0 || cmdExist.sync("metrix++")) {
+        cpsModuleContent = `${cpsModuleContent}${fse.readFileSync(this.metrixppFile).toString()}`
+    }
+    fse.writeFileSync(path.join(dstFolder,"cps.cmake"), cpsModuleContent);
   }
 }

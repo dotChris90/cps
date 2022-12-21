@@ -15,7 +15,7 @@ describe("config-manager", () => {
       const cpsPath = path.join(__filename, "..", "data", "min.yml");
       const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
 
-      const configManager = new ConfigManager(cpsObj);
+      const configManager = new ConfigManager(cpsObj,cpsPath);
 
       expect(cpsObj.cmake.executables.length).toBe(0);
       expect(cpsObj.cmake.libraries.length).toBe(0);
@@ -61,7 +61,7 @@ describe("config-manager", () => {
       const cpsPath = path.join(__filename, "..", "data", "min.yml");
       const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
 
-      const configManager = new ConfigManager(cpsObj);
+      const configManager = new ConfigManager(cpsObj, cpsPath);
 
       expect(cpsObj.conan.options.length).toBe(0);
       expect(cpsObj.conan.packages.length).toBe(0);
@@ -87,14 +87,13 @@ describe("config-manager", () => {
 
     it("shall manage pip config", async () => {
       const cpsPath = path.join(__filename, "..", "data", "min.yml");
-      const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
-
-      const configManager = new ConfigManager(cpsObj);
+      
+      const configManager = ConfigManager.createFromYmlFile(cpsPath);
       configManager.addPipPackage("abc", "1.2.3");
-      expect(cpsObj.pip.tools.length).toBe(1);
-      expect(cpsObj.pip.tools[0].name).toBe("abc");
+      expect(configManager.config.pip.tools.length).toBe(1);
+      expect(configManager.config.pip.tools[0].name).toBe("abc");
       configManager.rmPipPackage("abc");
-      expect(cpsObj.pip.tools.length).toBe(0);
+      expect(configManager.config.pip.tools.length).toBe(0);
     });
   });
 });

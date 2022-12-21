@@ -23,7 +23,7 @@ describe("cmakefile-generator", () => {
       );
       const cmpCMake =  path.join(__filename, "..", "data", "CMakeLists.txt");
       const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
-      const manager = new ConfigManager(cpsObj);
+      const manager = new ConfigManager(cpsObj, cpsPath);
 
       const gen = new CMakeGenerator(manager);
 
@@ -32,7 +32,7 @@ describe("cmakefile-generator", () => {
       const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
       const tmpConanFile = path.join(tmpDir, "CMakeLists.txt");
 
-      gen.generateCMakeFileTxt(tmpConanFile);
+      gen.generateCMakeFileTxt(tmpDir);
 
       const desiredContent = fse.readFileSync(cmpCMake).toString();
       const writtenContent = fse.readFileSync(tmpConanFile).toString();
@@ -41,5 +41,27 @@ describe("cmakefile-generator", () => {
 
       fse.rmSync(tmpDir, { recursive: true });
     });
+    it("shall generate cps.cmake", async () => {
+        const cpsPath = path.join(
+          __filename,
+          "..",
+          "..",
+          "config",
+          "data",
+          "cps.yml"
+        );
+        const cmpCMake =  path.join(__filename, "..", "data", "CMakeLists.txt");
+        const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
+        const manager = new ConfigManager(cpsObj,cpsPath);
+  
+        const gen = new CMakeGenerator(manager);
+  
+        const prefix = "cmake-test";
+  
+        const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
+        gen.generateCPSCMakeModule(tmpDir);
+        
+        fse.rmSync(tmpDir, {recursive: true});
+        });
   });
 });

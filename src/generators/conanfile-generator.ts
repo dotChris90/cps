@@ -17,7 +17,7 @@ export class ConanfileGenerator {
     );
   }
 
-  public generateConanfilePy(fileDst: string) {
+  public generateConanfilePy(folderDst: string) {
     let templateContent = fse.readFileSync(this.templateFile).toString();
     let config = this.configManager.config;
     const topics = " (\n$ARGS\n    )".replace(
@@ -81,7 +81,7 @@ export class ConanfileGenerator {
       .replace("    {{requirements}}", requiresMethod)
       .replace("    {{build_requirements}}", buildRequiresMethod);
 
-    fse.writeFileSync(fileDst, templateContent);
+    fse.writeFileSync(path.join(folderDst,"conanfile.py"), templateContent);
   }
 
   public generateConanfileTxt(fileDst : string) {

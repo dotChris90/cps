@@ -23,7 +23,7 @@ describe("conanfile-generator", () => {
       );
       const cmpConanfile = path.join(__filename, "..", "data", "conanfile.py");
       const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
-      const manager = new ConfigManager(cpsObj);
+      const manager = new ConfigManager(cpsObj,cpsPath);
 
       const gen = new ConanfileGenerator(manager);
 
@@ -32,7 +32,7 @@ describe("conanfile-generator", () => {
       const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
       const tmpConanFile = path.join(tmpDir, "conanfile.py");
 
-      gen.generateConanfilePy(tmpConanFile);
+      gen.generateConanfilePy(tmpDir);
 
       const desiredContent = fse.readFileSync(cmpConanfile).toString();
       const writtenContent = fse.readFileSync(tmpConanFile).toString();
