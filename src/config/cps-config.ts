@@ -17,6 +17,14 @@ export class CPSConfig {
 
   url = "";
 
+  sourceDir = "";
+
+  installDir = "";
+
+  buildDir = "";
+
+  pkgDir = "";
+
   description = "";
 
   topics: string[] = [];

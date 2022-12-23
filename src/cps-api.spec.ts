@@ -64,7 +64,16 @@ describe("cps-api", () => {
         const cpsObj = new cps.CPSAPI(ConfigManager.createFromYmlFile(path.join(tmpDir,"cps.yml")));
         cpsObj.generateConanfilePy();
 
-        expect(1).toBe(1);
+        const desiredContent = fse.readFileSync(
+            path.join(__filename,"..","data","conanfile.py")
+        ).toString();
+        const trueContent = fse.readFileSync(
+            path.join(tmpDir,"conanfile.py")
+        ).toString();
+        
+        expect(trueContent).toBe(desiredContent);
+
+        fse.rmSync(tmpDir, { recursive: true});
     });
 
     it("shall generate CMakeLists", async() => {
@@ -85,7 +94,16 @@ describe("cps-api", () => {
         const cpsObj = new cps.CPSAPI(ConfigManager.createFromYmlFile(path.join(tmpDir,"cps.yml")));
         cpsObj.generateCMakeLists();
 
-        expect(1).toBe(1);
+        const desiredContent = fse.readFileSync(
+            path.join(__filename,"..","data","CMakeLists.txt")
+        ).toString();
+        const trueContent = fse.readFileSync(
+            path.join(tmpDir,"CMakeLists.txt")
+        ).toString();
+        
+        expect(trueContent).toBe(desiredContent);
+
+        fse.rmSync(tmpDir, { recursive: true});
     });
   });
 });
