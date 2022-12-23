@@ -25,6 +25,8 @@ export class CPSConfig {
 
   pkgDir = "";
 
+  deployDir = "";
+
   description = "";
 
   topics: string[] = [];

@@ -19,6 +19,21 @@ export class ConanCommands {
         return returnCmd; 
     }
 
+    public inspectFile(
+        conanfile : string,
+        attribute : string
+    )  : Command {
+        const cmd = this.cloneCmd();
+        cmd.args = [
+            "inspect",
+            conanfile,
+            "-a", 
+            attribute
+        ];
+
+        return cmd;
+    }
+
     public create(
         hostProfile = "default",
         buildProfile = "default",
@@ -32,6 +47,33 @@ export class ConanCommands {
             `-pr:b=${buildProfile}`,
             conanfile  
         ];
+        return returnCmd;
+    }
+
+    public installPkg(
+        hostProfile = "default",
+        buildProfile = "default",
+        buildType = "Release",
+        generator = "",
+        name : string,
+        version : string
+    ) : Command {
+        const returnCmd = this.cloneCmd();
+        returnCmd.args = [
+            "install",
+            `-pr:h=${hostProfile}`,
+            `-pr:b=${buildProfile}`,
+            `-s build_type=${buildType}`,
+            '--build=missing'
+        ];
+        if (generator === "") {
+
+        }
+        else {
+            returnCmd.args.push("--generator");
+            returnCmd.args.push(generator);
+        }
+        returnCmd.args.push(`${name}/${version}@_/_`);
         return returnCmd;
     }
 

@@ -32,7 +32,7 @@ describe("conan-api", () => {
 
         fse.mkdirpSync(path.join(tmpDir,"build"));
 
-        await conan.deployHeaders(
+        await conan.importHeaders(
             "default",
             "default",
             "Release",
@@ -45,5 +45,39 @@ describe("conan-api", () => {
 
         fse.rmSync(tmpDir,{recursive:true});
     });
+
+    it("deploy package", async() => {
+
+        const fake = new FakeOutput();
+        const exe = new Executor(fake);
+        const conan = new ConanAPI(fake,exe);
+
+        const prefix = "conan-api-test";
+        const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
+
+        fse.mkdirpSync(tmpDir);
+        fse.mkdirpSync(path.join(tmpDir,"deploy"));
+
+        fse.copySync(
+            path.join(__filename,"..","..","data","new"),
+            path.join(tmpDir,"new")
+        );
+
+        await conan.deploy(
+            "default",
+            "default",
+            "Release",
+            path.join(tmpDir,"new","conanfile.py"),
+            path.join(tmpDir,"deploy")
+        );
+
+        expect(fse.existsSync(path.join(tmpDir,"deploy","all","include","fmt"))).toBeTruthy();
+        expect(fse.existsSync(path.join(tmpDir,"deploy","all","include","gsl"))).toBeTruthy();
+        expect(fse.existsSync(path.join(tmpDir,"deploy","all","lib","libfmt.a"))).toBeTruthy();
+        expect(fse.existsSync(path.join(tmpDir,"deploy","all","bin","abc"))).toBeTruthy();
+        
+
+        fse.rmSync(tmpDir, {recursive:true});
+    })
   });
 });

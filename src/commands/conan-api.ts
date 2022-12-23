@@ -5,6 +5,7 @@ import { TextOutput } from "../output/text-output";
 import { ConanCommands } from "./conan-commands";
 import { InvalidPathError } from '../error/invalide-path-error';
 import { Executor } from "./executor";
+import { Command } from './command';
 
 export class ConanAPI {
 
@@ -72,7 +73,24 @@ export class ConanAPI {
         return this.exe.execAsync(cmd);    
     }
 
-    public async deployHeaders(
+    public installPkgAsDeployment(
+        buildProfile: string,
+        hostProfile: string,
+        buildType: string,
+        name : string,
+        version : string,
+        deployDir : string
+    ) : Promise<void> {
+        
+        this.validateDir("deployDir",deployDir);
+    
+        const cmd = this.conanCmd.installPkg(hostProfile,buildProfile,buildType,"deploy",name,version);
+        cmd.workDir = deployDir;
+    
+        return this.exe.execAsync(cmd);    
+    }
+
+    public async importHeaders(
         buildProfile: string,
         hostProfile: string,
         buildType: string,
@@ -136,5 +154,86 @@ export class ConanAPI {
         cmd.workDir = process.cwd();
 
         return this.exe.execAsync(cmd);
+    }
+
+    public inspectConanfile(
+        conanfile : string,
+        attribute : string
+    ) : string {
+
+        const cmd = this.conanCmd.inspectFile(conanfile,attribute);
+        const result = this.exe.execSyncGetFormatStdout(cmd);
+
+        let attributeText = `${attribute}: `;
+        return result[0].substring(attributeText.length);
+    }
+
+
+
+    public async package(
+        buildProfile: string,
+        hostProfile: string,
+        buildType: string,
+        conanfile : string,
+        pkgDir : string ) : Promise<void> {
+        await this.create(
+            buildProfile,
+            hostProfile,
+            buildType,
+            conanfile);
+
+        const name = this.inspectConanfile(conanfile,"name");
+        const version = this.inspectConanfile(conanfile,"version");
+        
+        return this.installPkgAsDeployment(
+            buildProfile,
+            hostProfile,
+            buildType,
+            name,
+            version,pkgDir);
+    }
+
+    public async deploy(
+        buildProfile: string,
+        hostProfile: string,
+        buildType: string,
+        conanfile : string,
+        deployDir : string 
+    ) : Promise<void> {
+        await this.package( 
+            buildProfile,
+            hostProfile,
+            buildType,
+            conanfile,
+            deployDir);
+        // remember : licenses
+        const pkgSubDir = [
+            "bin",
+            "lib",
+            "include",
+            "res"
+        ];
+
+        const pkgs = fse.readdirSync(deployDir, {withFileTypes:true})
+                                .filter(e => e.isDirectory())
+                                .map(e => path.join(deployDir,e.name));
+
+        fse.mkdirpSync(path.join(deployDir,"all"));
+
+        pkgSubDir.forEach(e => {
+                    fse.mkdirpSync(path.join(deployDir,"all",e));
+                    pkgs.forEach( pkg => {
+                        if (fse.existsSync(path.join(pkg,e))) {
+                            const subDirs = fse.readdirSync(path.join(pkg,e),{withFileTypes:true})
+                                               .map(subE => subE.name);
+                            subDirs.forEach(subE => {
+                                fse.copySync(
+                                    path.join(pkg,e,subE),
+                                    path.join(deployDir,"all",e,subE)
+                                );
+                            })
+                        }
+                    });
+                });
     }
 }
