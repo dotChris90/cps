@@ -1,11 +1,13 @@
 import * as path from 'path';
 import * as utilExt from '@dotchris90/utils-extensions';
 import * as fse from 'fs-extra';
+import * as os from 'os';
 import { TextOutput } from "../output/text-output";
 import { ConanCommands } from "./conan-commands";
 import { InvalidPathError } from '../error/invalide-path-error';
 import { Executor } from "./executor";
 import { Command } from './command';
+import { ConanPackage } from '../conan/package';
 
 export class ConanAPI {
 
@@ -156,7 +158,49 @@ export class ConanAPI {
         return this.exe.execAsync(cmd);
     }
 
-    public inspectConanfile(
+    public async buildTest(
+        hostProfile: string,
+        buildProfile: string,
+        buildType: string,
+        conanfile : string,
+        conanTestFile : string) : Promise<void> {
+
+        let cmd = this.conanCmd.createWithoutTest(
+            hostProfile,
+            buildProfile,
+            buildType,
+            conanfile
+        );
+        
+        await this.exe.execAsync(cmd);
+
+        const name = this.inspectConanfileAttr(conanfile,"name");
+        const version = this.inspectConanfileAttr(conanfile,"version");
+
+        const testBuildFolder = path.join(path.dirname(conanTestFile),"build");
+        fse.mkdirpSync(testBuildFolder);
+
+        cmd = this.conanCmd.install(
+            hostProfile,
+            buildProfile,
+            buildType,
+            "",
+            conanTestFile
+        );
+        cmd.workDir = testBuildFolder;
+
+        await this.exe.execAsync(cmd);
+
+        cmd = this.conanCmd.installPkg(hostProfile,buildProfile,buildType,"cmake_find_package_multi",name,version);
+        cmd.workDir = path.join(testBuildFolder,"generators");
+        await this.exe.execAsync(cmd);
+
+        cmd = this.conanCmd.build(conanTestFile);
+        cmd.workDir = testBuildFolder;
+        return this.exe.execAsync(cmd);
+    }
+
+    public inspectConanfileAttr(
         conanfile : string,
         attribute : string
     ) : string {
@@ -168,6 +212,57 @@ export class ConanAPI {
         return result[0].substring(attributeText.length);
     }
 
+    public inspectPkg(
+        name : string,
+        version : string
+    ) : ConanPackage {
+        const prefix = "conan-api-json";
+        const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
+        const jsonFile = path.join(tmpDir,"inspect.json");
+
+        fse.mkdirpSync(tmpDir);
+
+        const cmd1 = this.conanCmd.inspectPkg(name, version, jsonFile);
+        this.exe.execSyncGetFormatStdout(cmd1);
+
+        const jsonContent = fse.readFileSync(jsonFile).toString();
+
+        let jsonObj = JSON.parse(jsonContent) as ConanPackage;
+        jsonObj = new ConanPackage(jsonObj);
+
+        const cmd2 = this.conanCmd.outputGraph(name, version,path.join(tmpDir,"out.dot") );
+        this.exe.execSyncGetFormatStdout(cmd2);
+
+        let pkgs = fse.readFileSync(path.join(tmpDir,"out.dot")).toString()
+                      .split("\n")
+                      .filter(e => e.startsWith("        "))
+                      .map(e => e.trim());
+
+        pkgs.forEach(e => {
+            e.split(" -> ").forEach(ee => jsonObj.deepRequires.add(ee.trim().replaceAll('"','')))
+        });
+
+        if (jsonObj.deepRequires.has("virtual"))
+            jsonObj.deepRequires.delete("virtual");
+        jsonObj.deepRequires.delete(`${name}/${version}`);
+
+        fse.rmSync(tmpDir,{recursive:true});
+
+        return jsonObj;
+    }
+
+    public inspectPkgAttr(
+        name : string,
+        version : string,
+        attribute : string
+    ) : string {
+
+        const cmd = this.conanCmd.inspectPkg(name, version,attribute);
+        const result = this.exe.execSyncGetFormatStdout(cmd);
+
+        let attributeText = `${attribute}: `;
+        return result[0].substring(attributeText.length);   
+    }
 
 
     public async package(
@@ -182,8 +277,8 @@ export class ConanAPI {
             buildType,
             conanfile);
 
-        const name = this.inspectConanfile(conanfile,"name");
-        const version = this.inspectConanfile(conanfile,"version");
+        const name = this.inspectConanfileAttr(conanfile,"name");
+        const version = this.inspectConanfileAttr(conanfile,"version");
         
         return this.installPkgAsDeployment(
             buildProfile,

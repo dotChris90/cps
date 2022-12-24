@@ -85,8 +85,8 @@ export class Executor {
 
       const out = child_process.spawnSync(cmd.cmd, cmd.args, options);
 
-      this.output.out(out.stdout);
-      this.output.err(out.stderr);
+      this.output.out(out.stdout.toString());
+      this.output.err(out.stderr.toString());
     }
 
   // required since some classes like cppcheck need the output for error check

@@ -34,6 +34,91 @@ export class ConanCommands {
         return cmd;
     }
 
+    public outputGraph(
+        name : string, 
+        version : string,
+        outfile : string
+    ) : Command {
+
+        const cmd = this.cloneCmd();
+        cmd.args = [
+            "info",
+            `${name}/${version}@_/_`,
+            "-n",
+            "requires",
+            "-g",
+            outfile
+        ];
+
+        return cmd;
+    }
+
+    public infoPkg(
+        name : string,
+        version : string
+    ) : Command {
+
+        const cmd = this.cloneCmd();
+        cmd.args = [
+            "info",
+            `${name}/${version}@_/_`,
+            "-n",
+            "requires"
+        ];
+
+        return cmd;
+    }
+
+    public inspectPkg(
+        name : string,
+        version : string,
+        jsonOutFile : string
+    ) : Command {
+        const cmd = this.cloneCmd();
+        cmd.args = [
+            "inspect",
+            `${name}/${version}@_/_`,
+            "--json",
+            jsonOutFile
+        ];
+
+        return cmd;
+    }
+
+    public inspectPkgAttr(
+        name : string,
+        version : string,
+        attribute : string
+    )  : Command {
+        const cmd = this.cloneCmd();
+        cmd.args = [
+            "inspect",
+            `${name}/${version}@_/_`,
+            "-a", 
+            attribute
+        ];
+
+        return cmd;
+    }
+    
+
+    public createWithoutTest(
+        hostProfile = "default",
+        buildProfile = "default",
+        buildType = "Release",
+        conanfile : string
+    ) : Command {
+        const returnCmd = this.cloneCmd();
+        returnCmd.args = [
+            "create",
+            `-pr:h=${hostProfile}`,
+            `-pr:b=${buildProfile}`,
+            "-tf=None",
+            conanfile  
+        ];
+        return returnCmd;
+    }
+
     public create(
         hostProfile = "default",
         buildProfile = "default",

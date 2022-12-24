@@ -46,6 +46,87 @@ describe("conan-api", () => {
         fse.rmSync(tmpDir,{recursive:true});
     });
 
+    it("shall inspect package", async() => {
+
+
+        const fake = new FakeOutput();
+        const exe = new Executor(fake);
+        const conan = new ConanAPI(fake,exe);
+
+        const obj = conan.inspectPkg("iceoryx","2.0.2");
+
+        expect(obj.author).toBe(null);
+        expect(obj.name).toBe("iceoryx");
+        expect(obj.version).toBe("2.0.2");
+        expect(obj.deepRequires.size).toBe(3);
+        
+    });
+
+    it("shall just build the test", async() => {
+
+        const fake = new FakeOutput();
+        const exe = new Executor(fake);
+        const conan = new ConanAPI(fake,exe);
+
+        const prefix = "conan-api-test";
+        const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
+
+        fse.mkdirpSync(tmpDir);
+
+        fse.copySync(
+            path.join(__filename,"..","..","data","newWithTest"),
+            path.join(tmpDir,"new")
+        );
+
+        await conan.buildTest(
+            "default",
+            "default",
+            "Release",
+            path.join(tmpDir,"new","conanfile.py"),
+            path.join(tmpDir,"new","test_package","conanfile.py")
+        );
+
+        expect(fse.existsSync(path.join(tmpDir,"new","test_package","build","Release","example"))).toBeTruthy();
+        fse.rmSync(tmpDir,{recursive:true});
+    });
+
+    it("shall install pkgs and build", async() => {
+
+        const fake = new FakeOutput();
+        const exe = new Executor(fake);
+        const conan = new ConanAPI(fake,exe);
+
+        const prefix = "conan-api-test";
+        const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
+
+        fse.mkdirpSync(tmpDir);
+
+        fse.copySync(
+            path.join(__filename,"..","..","data","new"),
+            path.join(tmpDir,"new")
+        );
+
+
+        fse.mkdirpSync(path.join(tmpDir,"new","build"));
+
+        await conan.install(
+            "default",
+            "default",
+            "Release",
+            path.join(tmpDir,"new", "conanfile.py"),
+            path.join(tmpDir,"new", "build")
+        );
+
+        await conan.build(
+            path.join(tmpDir,"new", "conanfile.py"),
+            path.join(tmpDir,"new", "build") 
+        );
+
+        expect(fse.existsSync(path.join(tmpDir,"new","build","Release","abc"))).toBeTruthy();
+
+        fse.rmSync(tmpDir,{recursive:true});
+    });
+
     it("deploy package", async() => {
 
         const fake = new FakeOutput();
