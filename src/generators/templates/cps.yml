@@ -4,6 +4,7 @@ license: {{license}}
 author:
 url:
 description:
+buildDir: build
 topics:
   - topic1
 conan:

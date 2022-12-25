@@ -16,7 +16,7 @@ describe("cps-api", () => {
         const prefix = "cps-test";
         const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
 
-        const cpsObj = new cps.CPSAPI();
+        const cpsObj = cps.CPSAPI.createFakeBased();
         cpsObj.newProject(
             tmpDir,
             "cpsTest",
@@ -61,7 +61,7 @@ describe("cps-api", () => {
             path.join(tmpDir,"cps.yml")
         );
 
-        const cpsObj = new cps.CPSAPI(ConfigManager.createFromYmlFile(path.join(tmpDir,"cps.yml")));
+        const cpsObj = cps.CPSAPI.createFakeBased(ConfigManager.createFromYmlFile(path.join(tmpDir,"cps.yml")));
         cpsObj.generateConanfilePy();
 
         const desiredContent = fse.readFileSync(
@@ -91,7 +91,7 @@ describe("cps-api", () => {
             path.join(tmpDir,"cps.yml")
         );
 
-        const cpsObj = new cps.CPSAPI(ConfigManager.createFromYmlFile(path.join(tmpDir,"cps.yml")));
+        const cpsObj = cps.CPSAPI.createFakeBased(ConfigManager.createFromYmlFile(path.join(tmpDir,"cps.yml")));
         cpsObj.generateCMakeLists();
 
         const desiredContent = fse.readFileSync(

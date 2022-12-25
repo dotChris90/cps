@@ -12,5 +12,7 @@ export class FakeInput implements TextInput {
         return list;
     }
 
-    
+    clear() : void{
+        
+    }
 }

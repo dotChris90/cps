@@ -43,6 +43,12 @@ export class ConanAPI {
         }
     }
 
+    public listProfiles() : string[] {
+        const cmd = this.conanCmd.listProfiles();
+        const profiles = this.exe.execSyncGetFormatStdout(cmd);
+        return profiles;
+    }
+
     public install(
         buildProfile: string,
         hostProfile: string,
@@ -135,6 +141,25 @@ export class ConanAPI {
 
         const cmd = this.conanCmd.build(conanfile);
         cmd.workDir = buildDir;
+
+        return this.exe.execAsync(cmd);
+    }
+
+    public createWithoutTest(
+        buildProfile: string,
+        hostProfile: string,
+        buildType: string,
+        conanfile : string) : Promise<void> {
+    
+        this.validateConanfile(conanfile);
+        let cmd = this.conanCmd.createWithoutTest(
+            hostProfile,
+            buildProfile,
+            buildType,
+            conanfile 
+        );
+
+        cmd.workDir = process.cwd();
 
         return this.exe.execAsync(cmd);
     }
@@ -271,7 +296,7 @@ export class ConanAPI {
         buildType: string,
         conanfile : string,
         pkgDir : string ) : Promise<void> {
-        await this.create(
+        await this.createWithoutTest(
             buildProfile,
             hostProfile,
             buildType,

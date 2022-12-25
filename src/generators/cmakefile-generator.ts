@@ -14,6 +14,8 @@ export class CMakeGenerator {
 
   metrixppFile: string;
 
+  pipFile : string;
+
   public constructor(cpsConfigManager: ConfigManager) {
     this.configManager = cpsConfigManager;
     this.templateFile = path.join(
@@ -40,6 +42,12 @@ export class CMakeGenerator {
         "templates",
         "metrixpp.cmake"
       );
+      this.pipFile = path.join(
+        __filename,
+        "..",
+        "templates",
+        "pip.cmake"
+      )
   }
 
   public generateCMakeFileTxt(dstFolder : string) {
@@ -128,6 +136,9 @@ export class CMakeGenerator {
     }
     if (cfg.pip.tools.filter(e => e.name === "metrixpp").length > 0 || cmdExist.sync("metrix++")) {
         cpsModuleContent = `${cpsModuleContent}${fse.readFileSync(this.metrixppFile).toString()}`
+    }
+    if (cfg.pip.tools.length > 0) {
+        cpsModuleContent = `${cpsModuleContent}${fse.readFileSync(this.pipFile).toString()}`    
     }
     fse.writeFileSync(path.join(dstFolder,"cps.cmake"), cpsModuleContent);
   }

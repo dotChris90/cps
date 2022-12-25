@@ -19,9 +19,10 @@
       "type": "node",
       "request": "launch",
       "name": "Launch cps",
-      "stopOnEntry": false,
+      "stopOnEntry": true,
       "program": "${workspaceFolder}/src/cps.ts",
-      "args": ["init"],
+      "args": ["install"],
+      "cwd": "/tmp/def",
       "console": "externalTerminal",
       "preLaunchTask": "npm: build",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]

@@ -49,7 +49,7 @@
     "prepublish": "npm run build",
     "debug": "tsc --sourcemap",
     "try": "node dist/main.js",
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && tsc -b && shx cp -R src/generators/templates dist/generators/",
     "dev": "microbundle watch -o dist/ --sourcemap false --compress false",
     "test": "jest --coverage --silent=false",
     "lint": "eslint --ext .js,.jsx,.ts,.tsx ."
