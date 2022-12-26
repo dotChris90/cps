@@ -310,7 +310,18 @@ export class ConanAPI {
             hostProfile,
             buildType,
             name,
-            version,pkgDir);
+            version,pkgDir).then( () => {
+                fse.readdirSync(pkgDir,{withFileTypes:true})
+                   .filter(e => e.name !== name)
+                   .map(e => path.join(pkgDir,e.name))
+                   .forEach(e => fse.rmSync(e, {recursive:true}));
+                fse.readdirSync(path.join(pkgDir,name),{withFileTypes:true})
+                   .forEach(e => fse.moveSync(
+                        path.join(pkgDir,name,e.name),
+                        path.join(pkgDir,e.name)
+                   ));
+                fse.rmSync(path.join(pkgDir,name),{recursive:true});
+            });
     }
 
     public async deploy(

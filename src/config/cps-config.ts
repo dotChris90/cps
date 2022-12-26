@@ -23,6 +23,8 @@ export class CPSConfig {
 
   buildDir = "";
 
+  importDir = "";
+
   pkgDir = "";
 
   deployDir = "";

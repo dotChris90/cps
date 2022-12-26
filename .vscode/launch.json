@@ -18,10 +18,22 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch cps",
+      "name": "Launch cps install",
       "stopOnEntry": true,
       "program": "${workspaceFolder}/src/cps.ts",
       "args": ["install"],
+      "cwd": "/tmp/def",
+      "console": "externalTerminal",
+      "preLaunchTask": "npm: build",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    }, 
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch cps package",
+      "stopOnEntry": true,
+      "program": "${workspaceFolder}/src/cps.ts",
+      "args": ["package"],
       "cwd": "/tmp/def",
       "console": "externalTerminal",
       "preLaunchTask": "npm: build",

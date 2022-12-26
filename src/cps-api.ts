@@ -109,15 +109,17 @@ export class CPSAPI {
 
     public async apiInstall(
         profile : string,
-        buildType : string
+        buildType : string,
+        importHeader : boolean
     ) : Promise<void> {
+
         const profiles = this.conan.listProfiles();
         const buildTypes = ["Debug","Release"];
 
         const prjProfiles   = await this.setStringFromListIfEmpty(profile,"Select conan profile for build",profiles);
         const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
         
-        return this.install(prjProfiles,prjBuildType);
+        return this.install(prjProfiles,prjBuildType,importHeader);
     }
 
     public async apiBuild(
@@ -126,8 +128,32 @@ export class CPSAPI {
         return this.build();
     }
 
-    public async apiPackage() : Promise<void> {
-        return this.package("default","Release");
+    public async apiPackage(
+        profile : string,
+        buildType : string
+    ) : Promise<void> {
+
+        const profiles = this.conan.listProfiles();
+        const buildTypes = ["Debug","Release"];
+
+        const prjProfiles   = await this.setStringFromListIfEmpty(profile,"Select conan profile for build",profiles);
+        const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
+
+        return this.package(prjProfiles,prjBuildType);
+    }
+
+    public async apiTest(
+        buildType : string,
+        justBuild : string
+    ) : Promise<void> {
+
+        const buildTypes = ["Debug","Release"];
+        const buildOrExe = ["Yes","No"];
+
+        const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
+        const decision = await this.setStringFromListIfEmpty(justBuild,"Just build but not execute?",buildOrExe);
+
+        return this.test(prjBuildType,decision === "Yes");
     }
 
     public async newProject(
@@ -183,9 +209,11 @@ export class CPSAPI {
         pipGen.generateRequriements(projectRoot);
     }
 
-    public install(
+    public async install(
         hostProfile : string,
-        buildType : string) {
+        buildType : string,
+        importHeaders : boolean
+        ) : Promise<void> {
             const buildProfile = "default";
             const conanfile = path.join(
                 path.dirname(this.cpsFileManager.ymlFilePath),
@@ -195,8 +223,41 @@ export class CPSAPI {
                 path.dirname(this.cpsFileManager.ymlFilePath),
                 this.cpsFileManager.config.buildDir
             );
+            let importDir = "";
+            if (importHeaders) {
+                importDir = path.join(
+                    path.dirname(this.cpsFileManager.ymlFilePath),
+                    this.cpsFileManager.config.importDir
+                );
+                let reimport = false;
+                if (fse.existsSync(importDir)) {
+                    if (importDir) {
+                        reimport = (await this.input.pickFromList("import dir exists, shall do reimport?",["Yes","No"]) === "Yes");
+                    }
+                    if (reimport) {
+                        fse.rmSync(importDir, {recursive:true});
+                        fse.mkdirpSync(importDir);
+                    }
+                    else {
+                        importHeaders = false;
+                    }
+                }
+                else {
+    
+                    fse.mkdirpSync(importDir);
+                }    
+            }
+            
+            fse.rmSync(genDir,{recursive:true});
             fse.mkdirpSync(genDir);
-            return this.conan.install(buildProfile,hostProfile,buildType,conanfile,genDir);
+            await this.conan.install(buildProfile,hostProfile,buildType,conanfile,genDir);
+            if (importHeaders) {
+                
+                return this.conan.importHeaders(buildProfile,hostProfile,buildType,conanfile,importDir);
+            }
+            else {
+                return;
+            }
         }
     
     public build() {
@@ -205,19 +266,26 @@ export class CPSAPI {
             "conanfile.py"
         );
         const buildDir = this.cpsFileManager.config.buildDir;
+        fse.mkdirpSync(buildDir);
         return this.conan.build(conanfile,buildDir);
     }
 
-    public package(
+    public async package(
         hostProfie : string,
         buildType : string
-    ) {
+    ) : Promise<void> {
         const conanfile = path.join(
             path.dirname(this.cpsFileManager.ymlFilePath),
             "conanfile.py"
         );
-        const packageDir = this.cpsFileManager.config.pkgDir;
+        const packageDir = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            this.cpsFileManager.config.pkgDir
+        );
         const buildProfile = "default";
+        if (fse.existsSync(packageDir))
+            fse.rmSync(packageDir,{recursive:true});
+        await fse.mkdirp(packageDir);
         return this.conan.package(buildProfile,hostProfie,buildType,conanfile,packageDir);
     }
 

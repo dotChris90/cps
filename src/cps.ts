@@ -36,10 +36,12 @@ cli.command("install")
    .description("Install packages to C/C++ project")
    .addOption(new commander.Option("--profile <profile>","conan profile").default("",""))
    .addOption(new commander.Option("--build-type <buildType>","Debug or Release").default("",""))
+   .addOption(new commander.Option("--noImport","do not import header of packages").default(false,"import"))
    .action(( option) => {
        CPSAPI.createTerminalBased().apiInstall(
            option.profile,
-           option.buildType
+           option.buildType,
+           !option.noImport
            ).then( () => process.exit());
    });
 
@@ -52,9 +54,25 @@ cli.command("build")
 
 cli.command("package")
    .description("package")
+   .addOption(new commander.Option("--profile <profile>","conan profile").default("",""))
+   .addOption(new commander.Option("--build-type <buildType>","Debug or Release").default("",""))
    .action(( option) => {
        CPSAPI.createTerminalBased().apiPackage(
+        option.profile,
+        option.buildType
         ).then( () => process.exit());
    });
+
+cli.command("test")
+   .description("test package")
+   .addOption(new commander.Option("--justBuild <yesORNo>","just build dont execute").default("",""))
+   .addOption(new commander.Option("--build-type <buildType>","Debug or Release").default("",""))
+   .action(( option) => {
+       CPSAPI.createTerminalBased().apiTest(
+        option.profile,
+        option.justBuild
+        ).then( () => process.exit());
+   });
+
 
 cli.parseAsync();
