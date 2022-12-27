@@ -130,6 +130,21 @@ export class CPSAPI {
         return this.build();
     }
 
+    public async apiDeploy(
+        profile : string,
+        buildType : string
+    ) : Promise<void> {
+
+        const profiles = this.conan.listProfiles();
+        const buildTypes = ["Debug","Release"];
+
+        const prjProfiles   = await this.setStringFromListIfEmpty(profile,"Select conan profile for build",profiles);
+        const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
+
+        return this.deploy(prjProfiles,prjBuildType);
+    
+    }
+
     public async apiPackage(
         profile : string,
         buildType : string
@@ -282,6 +297,25 @@ export class CPSAPI {
         const buildDir = this.cpsFileManager.config.buildDir;
         fse.mkdirpSync(buildDir);
         return this.conan.build(conanfile,buildDir);
+    }
+
+    public deploy(
+        hostProfie : string,
+        buildType : string
+    ) : Promise<void> {
+        const conanfile = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            "conanfile.py"
+        );
+        const deployDir = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            this.cpsFileManager.config.deployDir
+        );
+        if (fse.existsSync(deployDir))
+            fse.rmSync(deployDir,{recursive:true});
+        fse.mkdirSync(deployDir);
+        const buildProfile = "default";
+        return this.conan.deploy(buildProfile,hostProfie,buildType,conanfile,deployDir);
     }
 
     public async package(

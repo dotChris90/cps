@@ -6,7 +6,8 @@ url:
 description:
 importDir: import
 buildDir: build
-pkgDir : package
+pkgDir: package
+deployDir: deploy
 topics:
   - topic1
 conan:

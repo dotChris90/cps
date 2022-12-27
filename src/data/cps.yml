@@ -4,6 +4,10 @@ license: MIT
 author:
 url:
 description:
+importDir: import
+buildDir: build
+pkgDir: package
+deployDir: deploy
 topics:
   - topic1
 conan:
@@ -38,13 +42,13 @@ cmake:
   packages:
     - fmt
   executables:
-    - name: cpsTest::main
+    - name: main
       srcs:
         - src/main.cpp
       links:
-        - cpsTest::Hello
+        - Hello
   libraries:
-    - name: cpsTest::Hello
+    - name: Hello
       srcs:
         - src/Greeter.cpp
       incs:

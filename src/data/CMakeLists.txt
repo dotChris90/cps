@@ -2,31 +2,33 @@ cmake_minimum_required(VERSION 3.15)
 
 project(cpsTest CXX)
 
-include(cps.cmake)
+if(EXISTS cps.cmake)
+    include(cps.cmake)
+endif()
 
 find_package(fmt REQUIRED)
 
 
-add_executable(cpsTest::main
+add_executable(main
                "src/main.cpp"
 )
 
   
-add_library(cpsTest::Hello
+add_library(Hello
                "src/Greeter.cpp"
 )
 
 
-target_link_libraries(cpsTest::main cpsTest::Hello)
-target_link_libraries(cpsTest::Hello fmt::fmt)
+target_link_libraries(main Hello)
+target_link_libraries(Hello fmt::fmt)
 
 
-set_target_properties(cpsTest::Hello PROPERTIES PUBLIC_HEADER 
+set_target_properties(Hello PROPERTIES PUBLIC_HEADER 
                       "src/Greeter.hpp"
 )
 
                       
-install(TARGETS cpsTest::main cpsTest::Hello DESTINATION "."
+install(TARGETS main Hello DESTINATION "."
         PUBLIC_HEADER DESTINATION include
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib

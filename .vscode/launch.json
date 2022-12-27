@@ -38,6 +38,18 @@
       "console": "externalTerminal",
       "preLaunchTask": "npm: build",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch cps deploy",
+      "stopOnEntry": true,
+      "program": "${workspaceFolder}/src/cps.ts",
+      "args": ["deploy"],
+      "cwd": "/tmp/def",
+      "console": "externalTerminal",
+      "preLaunchTask": "npm: build",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

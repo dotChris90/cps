@@ -4,6 +4,10 @@ license: MIT
 author:
 url:
 description:
+importDir: import
+buildDir: build
+pkgDir: package
+deployDir: deploy
 topics:
   - dds
   - ipc

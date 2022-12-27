@@ -331,12 +331,23 @@ export class ConanAPI {
         conanfile : string,
         deployDir : string 
     ) : Promise<void> {
-        await this.package( 
+       
+        await this.createWithoutTest(
             buildProfile,
             hostProfile,
             buildType,
-            conanfile,
-            deployDir);
+            conanfile);
+
+        const name = this.inspectConanfileAttr(conanfile,"name");
+        const version = this.inspectConanfileAttr(conanfile,"version");
+        
+        await this.installPkgAsDeployment(
+            buildProfile,
+            hostProfile,
+            buildType,
+            name,
+            version,deployDir);
+
         // remember : licenses
         const pkgSubDir = [
             "bin",
@@ -366,5 +377,11 @@ export class ConanAPI {
                         }
                     });
                 });
+        fse.readdirSync(path.join(deployDir,"all"),{withFileTypes:true})
+           .forEach(e => {
+                if (fse.readdirSync(path.join(deployDir,"all",e.name)).length === 0 ) {
+                    fse.rmSync(path.join(deployDir,"all",e.name),{recursive:true});
+                }
+           })
     }
 }

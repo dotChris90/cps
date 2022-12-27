@@ -5,6 +5,7 @@ import * as fse from "fs-extra";
 import { CMake } from "./cmake";
 import { Conan } from "./conan";
 import { Pip } from "./pip";
+import { ValidationError } from "../error/validation-error";
 
 export class CPSConfig {
   name = "";
@@ -47,6 +48,22 @@ export class CPSConfig {
     else this.cmake = new CMake();
     if (this.pip !== null) this.pip = new Pip(this.pip);
     else this.pip = new Pip();
+    this.validate();
+  }
+
+  public validate() {
+    if (this.name === "")
+      throw new ValidationError("config requires name");
+    if (this.version === "")
+      throw new ValidationError("config requires version");
+    if (this.buildDir === "")
+      throw new ValidationError("config requires buildDir");
+    if (this.deployDir === "")
+      throw new ValidationError("config requires deployDir");
+    if (this.pkgDir === "")
+      throw new ValidationError("config requires pkgDir");
+    if (this.deployDir === "")
+      throw new ValidationError("config requires deployDir");  
   }
 
   public static createFromYMLFile(filePath: string): CPSConfig {

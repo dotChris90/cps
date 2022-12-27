@@ -74,5 +74,15 @@ cli.command("test")
         ).then( () => process.exit());
    });
 
+cli.command("deploy")
+   .description("deploy")
+   .addOption(new commander.Option("--profile <profile>","conan profile").default("",""))
+   .addOption(new commander.Option("--build-type <buildType>","Debug or Release").default("",""))
+   .action(( option) => {
+       CPSAPI.createTerminalBased().apiDeploy(
+        option.profile,
+        option.buildType
+        ).then( () => process.exit());
+   });
 
 cli.parseAsync();
