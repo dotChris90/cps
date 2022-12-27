@@ -4,7 +4,9 @@ license: {{license}}
 author:
 url:
 description:
+importDir: import
 buildDir: build
+pkgDir : package
 topics:
   - topic1
 conan:
@@ -39,13 +41,13 @@ cmake:
   packages:
     - fmt
   executables:
-    - name: {{name}}::main
+    - name: main
       srcs:
         - src/main.cpp
       links:
-        - {{name}}::Hello
+        - Hello
   libraries:
-    - name: {{name}}::Hello
+    - name: Hello
       srcs:
         - src/Greeter.cpp
       incs:

@@ -30,10 +30,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch cps package",
+      "name": "Launch cps test",
       "stopOnEntry": true,
       "program": "${workspaceFolder}/src/cps.ts",
-      "args": ["package"],
+      "args": ["test"],
       "cwd": "/tmp/def",
       "console": "externalTerminal",
       "preLaunchTask": "npm: build",

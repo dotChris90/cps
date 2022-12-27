@@ -66,10 +66,10 @@ cli.command("package")
 cli.command("test")
    .description("test package")
    .addOption(new commander.Option("--justBuild <yesORNo>","just build dont execute").default("",""))
-   .addOption(new commander.Option("--build-type <buildType>","Debug or Release").default("",""))
+   .addOption(new commander.Option("--buildType <buildType>","Debug or Release").default("",""))
    .action(( option) => {
        CPSAPI.createTerminalBased().apiTest(
-        option.profile,
+        option.buildType,
         option.justBuild
         ).then( () => process.exit());
    });

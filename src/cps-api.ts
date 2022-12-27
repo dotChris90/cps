@@ -103,7 +103,9 @@ export class CPSAPI {
 
     public async apiGenerate() : Promise<void> {
         this.generateCMakeLists();
+        this.generateCMakeTestLists();
         this.generateConanfilePy();
+        this.generateConanTestFilePy();
         this.generateRequriements();
     }
 
@@ -197,10 +199,22 @@ export class CPSAPI {
         cmakeGen.generateCPSCMakeModule(projectRoot);
     }
 
+    public generateCMakeTestLists() {
+        const projectRoot = path.dirname(this.cpsFileManager.ymlFilePath);
+        const cmakeGen = new CMakeGenerator(this.cpsFileManager);
+        cmakeGen.generateCMakeTestFileTxt(path.join(projectRoot,"test_package"));
+    }
+
     public generateConanfilePy() {
         const projectRoot = path.dirname(this.cpsFileManager.ymlFilePath);
         const conanGen = new ConanfileGenerator(this.cpsFileManager);
         conanGen.generateConanfilePy(projectRoot);
+    }
+
+    public generateConanTestFilePy() {
+        const projectRoot = path.dirname(this.cpsFileManager.ymlFilePath);
+        const conanGen = new ConanfileGenerator(this.cpsFileManager);
+        conanGen.generateConanTestFilePy(path.join(projectRoot,"test_package"));
     }
 
     public generateRequriements() {
@@ -230,7 +244,7 @@ export class CPSAPI {
                     this.cpsFileManager.config.importDir
                 );
                 let reimport = false;
-                if (fse.existsSync(importDir)) {
+                if (fse.existsSync(importDir) && fse.readdirSync(importDir).length > 0) {
                     if (importDir) {
                         reimport = (await this.input.pickFromList("import dir exists, shall do reimport?",["Yes","No"]) === "Yes");
                     }
@@ -247,8 +261,8 @@ export class CPSAPI {
                     fse.mkdirpSync(importDir);
                 }    
             }
-            
-            fse.rmSync(genDir,{recursive:true});
+            if(fse.existsSync(genDir))
+                fse.rmSync(genDir,{recursive:true});
             fse.mkdirpSync(genDir);
             await this.conan.install(buildProfile,hostProfile,buildType,conanfile,genDir);
             if (importHeaders) {
@@ -302,8 +316,21 @@ export class CPSAPI {
             "test_package",
             "conanfile.py"
         );
+        const conanTestBuildFolder= path.join(
+            path.dirname(conanTestFile),
+            "build"
+        );
+
         const hostProfile = "default";
         const buildProfile = "default";
+
+        if (fse.existsSync(conanTestBuildFolder)) {
+            fse.readdirSync(conanTestBuildFolder,{withFileTypes:true})
+               .filter(e => e.name !== "Debug" && e.name !== "Release")
+               .forEach(e => fse.rmSync(path.join(conanTestBuildFolder,e.name),{recursive:true}));
+        }
+        if (fse.existsSync(path.join(conanTestBuildFolder,buildType)))
+            fse.rmSync(path.join(conanTestBuildFolder,buildType),{recursive:true});
 
         if (justBuild) {
             return this.conan.buildTest(hostProfile,buildProfile,buildType,conanfile,conanTestFile);

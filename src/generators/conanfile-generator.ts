@@ -7,12 +7,22 @@ export class ConanfileGenerator {
 
   templateFile: string;
 
+  testTemplateFile : string;
+
   public constructor(cpsConfigManager: ConfigManager) {
     this.configManager = cpsConfigManager;
     this.templateFile = path.join(
       __filename,
       "..",
       "templates",
+      "conanfile.py"
+    );
+    this.testTemplateFile = path.join(
+      __filename,
+      "..",
+      "templates",
+      "new",
+      "test_package",
       "conanfile.py"
     );
   }
@@ -84,7 +94,15 @@ export class ConanfileGenerator {
     fse.writeFileSync(path.join(folderDst,"conanfile.py"), templateContent);
   }
 
-  public generateConanfileTxt(fileDst : string) {
-    
+  public generateConanFileTxt(folderDst: string) {
+
+  }
+
+  public generateConanTestFilePy(folderDst : string) {
+    let templateContent = fse.readFileSync(this.testTemplateFile).toString();
+    let config = this.configManager.config;
+    templateContent = templateContent.replace("{{package_name}}", config.name.toUpperCase());
+
+    fse.writeFileSync(path.join(folderDst,"conanfile.py"),templateContent);
   }
 }

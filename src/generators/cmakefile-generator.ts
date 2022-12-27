@@ -8,6 +8,8 @@ export class CMakeGenerator {
 
   templateFile: string;
 
+  templateTestFile : string;
+
   doxygenFile: string;
 
   cppcheckFile: string;
@@ -24,6 +26,14 @@ export class CMakeGenerator {
       "templates",
       "CMakeLists.txt"
     );
+    this.templateTestFile = path.join(
+        __filename,
+        "..",
+        "templates",
+        "new",
+        "test_package",
+        "CMakeLists.txt"
+      );
     this.doxygenFile = path.join(
         __filename,
         "..",
@@ -125,6 +135,12 @@ export class CMakeGenerator {
     fse.writeFileSync(path.join(dstFolder,"CMakeLists.txt"), templateContent);
   }
   
+  public generateCMakeTestFileTxt(dstFolder : string) {
+    let templateContent = fse.readFileSync(this.templateTestFile).toString();
+    templateContent = templateContent.replaceAll('"${name}"', this.configManager.config.name);
+    fse.writeFileSync(path.join(dstFolder,"CMakeLists.txt"), templateContent);
+  }
+
   public generateCPSCMakeModule(dstFolder : string) {
     const cfg = this.configManager.config;
     let cpsModuleContent = "";

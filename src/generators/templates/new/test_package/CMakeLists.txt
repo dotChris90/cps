@@ -1,22 +1,18 @@
 
 cmake_minimum_required(VERSION 3.1)
-project(abc_test CXX)
-
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+project("${name}"_test CXX)
 
 find_package(GTest REQUIRED)
+find_package("${name}" CONFIG REQUIRED)
 
 enable_testing()
 
 add_executable(pkg_test main.cpp 
                         Greeter_test.cpp
 )
-target_link_libraries(pkg_test  ${CONAN_LIBS}
-                                  GTest::GTest
+target_link_libraries(pkg_test  "${name}"::"${name}" 
+                                GTest::GTest
 )
-
-#//  GTest::gtest_main
 
 include(GoogleTest)
 

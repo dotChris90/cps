@@ -40,5 +40,13 @@ export class CppGenerator {
             fse.mkdirpSync(path.dirname(dstFile[idx]));
             fse.copyFileSync(srcFiles[idx],dstFile[idx]);
         }
+        fse.readdirSync(this.testFolder,{withFileTypes:true})
+           .filter(e => path.extname(e.name) === ".cpp")
+           .forEach(e => {
+                fse.copySync(
+                    path.join(this.testFolder,e.name),
+                    path.join(dstFolder,"test_package",e.name)
+                );
+           });
     }
 }
