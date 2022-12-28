@@ -48,6 +48,20 @@ export class ConanAPI {
         const profiles = this.exe.execSyncGetFormatStdout(cmd);
         return profiles;
     }
+    
+    public simpleInstall(
+        conanfile : string,
+        gendir : string
+    ) : Promise<void> {
+        
+        this.validateConanfile(conanfile);
+        this.validateDir("gendir",gendir);
+
+        const cmd = this.conanCmd.simpleInstall(conanfile);
+        cmd.workDir = gendir;
+
+        return this.exe.execAsync(cmd);
+    }
 
     public install(
         buildProfile: string,

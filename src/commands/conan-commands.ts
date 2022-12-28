@@ -119,6 +119,14 @@ export class ConanCommands {
         return returnCmd;
     }
 
+    public simpleInstall(
+        conanfile: string
+        ) : Command {
+            const cmd = this.cloneCmd();
+            cmd.args = ["install",conanfile];
+            return cmd;
+        }
+
     public create(
         hostProfile = "default",
         buildProfile = "default",
@@ -159,6 +167,30 @@ export class ConanCommands {
             returnCmd.args.push(generator);
         }
         returnCmd.args.push(`${name}/${version}@_/_`);
+        return returnCmd;
+    }
+
+    public installV1(
+        profile : string,
+        buildType = "Release",
+        generator = "",
+        conanfile : string
+    ) {
+        const returnCmd = this.cloneCmd();
+        returnCmd.args = [
+            "install",
+            `-pr=${profile}`,
+            `-s build_type=${buildType}`,
+            '--build=missing'
+        ];
+        if (generator === "") {
+
+        }
+        else {
+            returnCmd.args.push("--generator");
+            returnCmd.args.push(generator);
+        }
+        returnCmd.args.push(conanfile);
         return returnCmd;
     }
 

@@ -66,9 +66,10 @@ export class ConanfileGenerator {
     }
 
     let buildRequiresMethod = "";
-    if (config.conan.tools.length > 0) {
+    if (config.conan.tools.filter(e => !e.separate).length > 0) {
       buildRequiresMethod = "    def build_requirements(self):\n        ";
-      for (let pkg of config.conan.tools) {
+      const tools = config.conan.tools.filter(e => !e.separate);
+      for (let pkg of tools) {
         buildRequiresMethod = `${buildRequiresMethod}self.tool_requires("${pkg.name}/${pkg.version}")\n        `;
       }
     } else {

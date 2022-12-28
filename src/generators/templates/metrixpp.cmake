@@ -1,10 +1,7 @@
 find_program(METRIXPP metrix++)
 
 if(METRIXPP)
-    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/metrixpp.config" metrixconfig)
-    string(REPLACE "--" " --" metrixconfig "${metrixconfig}")
-    string(REPLACE ";" "" metrixconfig "${metrixconfig}")
-    
+
     set(SRC_DIR "src")
     set(METRIX_ARGS  --std.code.complexity.cyclomatic 
                      --std.code.complexity.maxindent 

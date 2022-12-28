@@ -5,6 +5,8 @@ export class Tool {
 
   options = new Map<string, string>();
 
+  separate = false;
+
   public constructor(init?: Partial<Tool>) {
     Object.assign(this, init);
   }

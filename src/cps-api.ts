@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fse from 'fs-extra';
+import * as os from 'os';
 
 import { ConfigManager } from "./config/config-manager";
 import { CPSConfig } from "./config/cps-config";
@@ -238,6 +239,95 @@ export class CPSAPI {
         pipGen.generateRequriements(projectRoot);
     }
 
+    protected async importHeader(
+        buildProfile : string,
+        hostProfile : string,
+        buildType : string, 
+        conanfile : string) {
+        let importHeaders = true;
+        let importDir = "";
+        importDir = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            this.cpsFileManager.config.importDir
+        );
+        let reimport = false;
+        if (fse.existsSync(importDir) && fse.readdirSync(importDir).length > 0) {
+            reimport = (await this.input.pickFromList("import dir exists, shall do reimport?",["Yes","No"]) === "Yes");
+        }
+        if (reimport) {
+            fse.rmSync(importDir, {recursive:true});
+        }
+        else {
+            importHeaders = false;
+        }
+        if (importHeaders) {
+            fse.mkdirpSync(importDir);
+            return this.conan.importHeaders(buildProfile,hostProfile,buildType,conanfile,importDir);
+        }
+        else {
+            return;
+        }
+    }   
+
+    public async genCPSToolFile(
+        buildProfile : string,
+        hostProfie : string,
+        buildType : string,
+        genDir : string
+    ) {
+        const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), "cps-cmake-path"));
+        const cpsToolchainFile = path.join(
+            genDir,
+            "generators",
+            "cps_toolchain.cmake"
+        );
+        const conanToolchainFile = path.join(
+            genDir,
+            "generators",
+            "conan_toolchain.cmake"
+        );
+        const conanfileTxt = path.join(
+            tmpDir,
+            "conanfile.txt"
+        );
+        const conanTmpBuild = path.join(
+            tmpDir,
+            "build"
+        );
+        const cmakePathFile = path.join(
+            tmpDir,
+            "build",
+            "conan_paths.cmake"
+        );
+        let conanfileTxtContent = "[generators]\ncmake_paths\n[build_requires]\n";
+        fse.mkdirpSync(tmpDir);
+        fse.mkdirpSync(conanTmpBuild);
+        
+        const tools = this.cpsFileManager.config.conan.tools.filter(e => e.separate);
+        tools.forEach(e => {
+            conanfileTxtContent = `${conanfileTxtContent}${e.name}/${e.version}\n`;
+        });
+        fse.writeFileSync(
+            conanfileTxt,
+            conanfileTxtContent
+        );
+
+        await this.conan.simpleInstall(conanfileTxt,conanTmpBuild);
+
+        const cmakePathContent = fse.readFileSync(cmakePathFile).toString();
+        
+        let cpsToolchainFileContent = fse.readFileSync(
+            conanToolchainFile
+        ).toString();
+        cpsToolchainFileContent = `${cpsToolchainFileContent}\n${cmakePathContent}`;
+
+        if (fse.existsSync(cpsToolchainFile))
+            fse.rmSync(cpsToolchainFile);
+        fse.writeFileSync(
+            cpsToolchainFile,cpsToolchainFileContent
+        );
+    }
+
     public async install(
         hostProfile : string,
         buildType : string,
@@ -252,41 +342,15 @@ export class CPSAPI {
                 path.dirname(this.cpsFileManager.ymlFilePath),
                 this.cpsFileManager.config.buildDir
             );
-            let importDir = "";
-            if (importHeaders) {
-                importDir = path.join(
-                    path.dirname(this.cpsFileManager.ymlFilePath),
-                    this.cpsFileManager.config.importDir
-                );
-                let reimport = false;
-                if (fse.existsSync(importDir) && fse.readdirSync(importDir).length > 0) {
-                    if (importDir) {
-                        reimport = (await this.input.pickFromList("import dir exists, shall do reimport?",["Yes","No"]) === "Yes");
-                    }
-                    if (reimport) {
-                        fse.rmSync(importDir, {recursive:true});
-                        fse.mkdirpSync(importDir);
-                    }
-                    else {
-                        importHeaders = false;
-                    }
-                }
-                else {
-    
-                    fse.mkdirpSync(importDir);
-                }    
-            }
             if(fse.existsSync(genDir))
                 fse.rmSync(genDir,{recursive:true});
             fse.mkdirpSync(genDir);
             await this.conan.install(buildProfile,hostProfile,buildType,conanfile,genDir);
-            if (importHeaders) {
-                
-                return this.conan.importHeaders(buildProfile,hostProfile,buildType,conanfile,importDir);
-            }
-            else {
-                return;
-            }
+            
+            if (this.cpsFileManager.config.conan.tools.filter(e => e.separate).length > 0)
+                await this.genCPSToolFile(buildProfile,hostProfile,buildType,genDir);
+
+            return this.importHeader(buildProfile,hostProfile,buildType,conanfile);
         }
     
     public build() {
