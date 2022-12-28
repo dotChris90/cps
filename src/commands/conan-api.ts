@@ -23,6 +23,10 @@ export class ConanAPI {
         this.exe = exe;
     }
 
+    public getBuildTypes() : string[] {
+        return ['Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel'];
+    }
+
     protected validateConanfile(
         conanfile : string
     ) : void {

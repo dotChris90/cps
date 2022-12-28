@@ -117,7 +117,7 @@ export class CPSAPI {
     ) : Promise<void> {
 
         const profiles = this.conan.listProfiles();
-        const buildTypes = ["Debug","Release"];
+        const buildTypes = this.conan.getBuildTypes();
 
         const prjProfiles   = await this.setStringFromListIfEmpty(profile,"Select conan profile for build",profiles);
         const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
@@ -137,7 +137,7 @@ export class CPSAPI {
     ) : Promise<void> {
 
         const profiles = this.conan.listProfiles();
-        const buildTypes = ["Debug","Release"];
+        const buildTypes = this.conan.getBuildTypes();
 
         const prjProfiles   = await this.setStringFromListIfEmpty(profile,"Select conan profile for build",profiles);
         const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
@@ -152,7 +152,7 @@ export class CPSAPI {
     ) : Promise<void> {
 
         const profiles = this.conan.listProfiles();
-        const buildTypes = ["Debug","Release"];
+        const buildTypes =  this.conan.getBuildTypes();
 
         const prjProfiles   = await this.setStringFromListIfEmpty(profile,"Select conan profile for build",profiles);
         const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
@@ -165,7 +165,7 @@ export class CPSAPI {
         justBuild : string
     ) : Promise<void> {
 
-        const buildTypes = ["Debug","Release"];
+        const buildTypes = this.conan.getBuildTypes();
         const buildOrExe = ["Yes","No"];
 
         const prjBuildType  = await this.setStringFromListIfEmpty(buildType,"Select build type",buildTypes);
@@ -424,7 +424,7 @@ export class CPSAPI {
 
         if (fse.existsSync(conanTestBuildFolder)) {
             fse.readdirSync(conanTestBuildFolder,{withFileTypes:true})
-               .filter(e => e.name !== "Debug" && e.name !== "Release")
+               .filter(e => this.conan.getBuildTypes().includes(e.name))
                .forEach(e => fse.rmSync(path.join(conanTestBuildFolder,e.name),{recursive:true}));
         }
         if (fse.existsSync(path.join(conanTestBuildFolder,buildType)))
