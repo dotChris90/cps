@@ -64,6 +64,8 @@ describe("conan-api", () => {
 
     it("shall just build the test", async() => {
 
+        jest.setTimeout(30000);
+
         const fake = new FakeOutput();
         const exe = new Executor(fake);
         const conan = new ConanAPI(fake,exe);

@@ -39,7 +39,6 @@ class CPSTESTConan(ConanFile):
         self.requires("fmt/8.1.1")
         
     def build_requirements(self):
-        self.tool_requires("doxygen/1.9.4")
         self.tool_requires("cppcheck/2.7.5")
         
 

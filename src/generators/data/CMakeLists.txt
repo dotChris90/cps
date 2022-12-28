@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 
 project(abc CXX)
 
-if(EXISTS cps.cmake)
-    include(cps.cmake)
+if(EXISTS ${CMAKE_SOURCE_DIR}/cps.cmake)
+    include(${CMAKE_SOURCE_DIR}/cps.cmake)
 endif()
 
 find_package(fmt REQUIRED)

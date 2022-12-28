@@ -30,8 +30,10 @@ conan:
   tools:
     - name: doxygen
       version: 1.9.4
+      separate: true
     - name: cppcheck
       version: 2.7.5
+      separate: false
 pip:
   tools:
     - name: conan
