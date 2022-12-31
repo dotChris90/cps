@@ -81,7 +81,7 @@ export class Executor {
       const workingDir = cmd.workDir === "" ? process.cwd() : cmd.workDir;
       let options : any = {};
       options['cwd'] = workingDir;
-      options['shell'] = "true";
+      options['shell'] = "false";
 
       const out = child_process.spawnSync(cmd.cmd, cmd.args, options);
 
@@ -93,15 +93,23 @@ export class Executor {
   public execSyncGetBuffer(
     cmd : Command
     ) : child_process.SpawnSyncReturns<Buffer> {
-      this.output.out("");
-      return child_process.spawnSync(cmd.cmd, cmd.args);
+      const workingDir = cmd.workDir === "" ? process.cwd() : cmd.workDir;
+      let options : child_process.SpawnSyncOptionsWithBufferEncoding = {};
+      options['cwd'] = workingDir;
+      options['shell'] = "false";
+
+      return child_process.spawnSync(cmd.cmd, cmd.args, options);
   }
 
     // required since some classes like cppcheck need the output for error check
   public execAsyncGetBuffer(
       cmd : Command
       ) : child_process.ChildProcessWithoutNullStreams {
-        this.output.out("");
-        return child_process.spawn(cmd.cmd, cmd.args);
+        const workingDir = cmd.workDir === "" ? process.cwd() : cmd.workDir;
+        let options : child_process.SpawnOptionsWithoutStdio = {};
+        options['cwd'] = workingDir;
+        options['shell'] = "false";
+  
+        return child_process.spawn(cmd.cmd, cmd.args, options);
     }
 }

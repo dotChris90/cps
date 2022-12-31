@@ -85,4 +85,19 @@ cli.command("deploy")
         ).then( () => process.exit());
    });
 
+cli.command("doc")
+   .description("documentation")
+   .action(( option) => {
+       CPSAPI.createTerminalBased().apiDoc(
+        ).then( () => process.exit());
+   });
+
+cli.command("edit")
+   .description("edit source or packages")
+   .action(( option) => {
+       CPSAPI.createTerminalBased().apiEdit(
+        ).then( () => process.exit());
+   });
+
+
 cli.parseAsync();

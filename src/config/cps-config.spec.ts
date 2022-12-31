@@ -5,6 +5,7 @@
 /* eslint-disable unicorn/import-style */
 import * as fse from "fs-extra";
 import * as path from "path";
+import * as os from "os";
 import { Conan } from "./conan";
 import { CPSConfig } from "./cps-config";
 
@@ -17,7 +18,7 @@ describe("cps-config", () => {
       expect(cpsObj.name).toBe("abc");
       expect(cpsObj.version).toBe("1.2.3");
       expect(cpsObj.cmake.executables[0].name).toBe("main");
-      expect(cpsObj.cmake.executables[0].srcs[0]).toBe("src/main.cpp");
+      expect(cpsObj.cmake.executables[0].srcsAsSet().has("src/main.cpp")).toBeTruthy();
       expect(cpsObj.conan.packages[0].name).toBe("fmt");
     });
 
@@ -28,7 +29,7 @@ describe("cps-config", () => {
       expect(cpsObj.name).toBe("abc");
       expect(cpsObj.version).toBe("1.2.3");
       expect(cpsObj.cmake.executables[0].name).toBe("main");
-      expect(cpsObj.cmake.executables[0].srcs[0]).toBe("src/main.cpp");
+      expect(cpsObj.cmake.executables[0].srcsAsSet().has("src/main.cpp")).toBeTruthy();
       expect(cpsObj.conan.options.length).toBe(0);
     });
 
@@ -41,4 +42,18 @@ describe("cps-config", () => {
       expect(cpsObj.cmake.executables.length).toBe(0);
     });
   });
+
+  it("shall write right", ()=> {
+    const cpsPath = path.join(__filename, "..", "data", "cps4.yml");
+    const cpsObj = CPSConfig.createFromYMLFile(cpsPath);
+
+    const prefix = "config";
+    const tmpDir = fse.mkdtempSync(path.join(os.tmpdir(), prefix));
+
+    fse.mkdirpSync(tmpDir);
+
+    CPSConfig.writeToYMLFile(path.join(tmpDir,"cps.yml"),cpsObj);
+
+    let a =1;
+  })
 });

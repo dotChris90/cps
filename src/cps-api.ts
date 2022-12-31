@@ -1,6 +1,8 @@
 import * as path from 'path';
 import * as fse from 'fs-extra';
 import * as os from 'os';
+import * as glob from 'glob';
+import * as utils from '@dotchris90/utils-extensions';
 
 import { ConfigManager } from "./config/config-manager";
 import { CPSConfig } from "./config/cps-config";
@@ -17,6 +19,9 @@ import { Executor } from './commands/executor';
 import { PipGenerator } from './generators/pip-generator';
 import { Console } from './Console';
 import { Fake } from './fake';
+import { CMakeAPI } from './commands/cmake-api';
+import { ValidationError } from './error/validation-error';
+import { Item } from './input/item';
 
 export class CPSAPI {
     
@@ -28,6 +33,8 @@ export class CPSAPI {
 
     conan : ConanAPI;
 
+    cmake : CMakeAPI;
+
     constructor(config : ConfigManager = null, out : TextOutput, input : TextInput) {
         if (config === null) {
             // pass 
@@ -38,6 +45,7 @@ export class CPSAPI {
         this.input = input;
         this.output = out;
         this.conan = new ConanAPI(out, new Executor(out));
+        this.cmake = new CMakeAPI(out, new Executor(out));
     }
 
     public static createTerminalBased() : CPSAPI {
@@ -172,6 +180,145 @@ export class CPSAPI {
         const decision = await this.setStringFromListIfEmpty(justBuild,"Just build but not execute?",buildOrExe);
 
         return this.test(prjBuildType,decision === "Yes");
+    }
+
+    public async apiEdit(
+
+    ) : Promise<void> {
+
+        let targets : string[] = [];
+        this.cpsFileManager.config.cmake.executables.forEach(e => {
+            targets.push(`exe --> ${e.name}`)
+        });
+        this.cpsFileManager.config.cmake.libraries.forEach(e => {
+            targets.push(`lib --> ${e.name}`)
+        });
+        let selectedTarget =  await (this.input.pickFromList("Select target to edit",targets));
+        const isLib = selectedTarget.startsWith("lib");
+        selectedTarget = selectedTarget.substring("lib -->".length+1);
+
+        const editOptions = (isLib) ? ["inc","src"] : ["src"];
+        
+        const option = await this.input.pickFromList("What type you want to edit?",editOptions);
+
+        if (option === "inc") {
+            await this.selectIncs(selectedTarget);
+        }
+        if (option === "src") {
+            await this.selectSrcs(selectedTarget);
+        }
+        CPSConfig.writeToYMLFile(this.cpsFileManager.ymlFilePath,this.cpsFileManager.config);
+    }
+
+    protected async selectIncs(selectedTarget : string) {
+        
+        const srcFolder = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            "src"
+        );
+
+        let incs : string[] = []
+
+        const patterns = [
+            `${srcFolder}/**/*.hpp`,
+            `${srcFolder}/**/*.h`
+        ];
+
+        patterns.forEach(pattern => {
+            incs = incs.concat(glob.sync(pattern))
+        }); 
+
+        for(let idx = 0; idx < incs.length;idx++)
+            incs[idx] = "src" + incs[idx].substring(srcFolder.length);
+
+        this.cpsFileManager.validateIncsInLibs(incs);
+       
+        const incsSelection = Array<Item>();
+
+        incs.forEach(e => {
+            let item = new Item();
+            item.text = e;
+            item.isSelected = this.cpsFileManager.doesLibHasInc(selectedTarget,e);
+            incsSelection.push(item);
+        });
+
+        let selectedItems = (await this.input.editLists("Select header files for cps.yml",incsSelection))
+                                       .filter(e => e.isSelected)
+                                       .map(e => e.text);
+        this.cpsFileManager.setIncs2Lib(selectedTarget,selectedItems);
+    }
+
+    protected async selectSrcs(selectedTarget : string) {
+
+        const srcFolder = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            "src"
+        );
+
+        let srcs : string[] = []
+
+        const patterns = [
+            `${srcFolder}/**/*.cpp`,
+            `${srcFolder}/**/*.cc`,
+            `${srcFolder}/**/*.c`
+        ];
+
+        patterns.forEach(pattern => {
+            srcs = srcs.concat(glob.sync(pattern))
+        }); 
+
+        for(let idx = 0; idx < srcs.length;idx++)
+            srcs[idx] = "src" + srcs[idx].substring(srcFolder.length);
+
+        this.cpsFileManager.validateSrcsInTargets(srcs);
+       
+        const srcsSelection = Array<Item>();
+
+        srcs.forEach(e => {
+            let item = new Item();
+            item.text = e;
+            item.isSelected = this.cpsFileManager.doesTargetHasSrc(selectedTarget,e);
+            srcsSelection.push(item);
+        });
+
+        let selectedItems = (await this.input.editLists("Select source files for cps.yml",srcsSelection))
+                                       .filter(e => e.isSelected)
+                                       .map(e => e.text);
+        this.cpsFileManager.setSrcs2Target(selectedTarget,selectedItems);
+    }  
+
+    public async apiDoc(
+
+    ) : Promise<void> {
+
+        const buildType = "Release";
+
+        return this.doc(buildType);
+    }
+
+    public async doc(
+        buildType : string
+    ) : Promise<void> {
+
+        let toolchainfile = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            this.cpsFileManager.config.buildDir,
+            "generators",
+            "cps_toolchain.cmake"
+        );
+        if (!fse.existsSync(toolchainfile))
+            throw new ValidationError("cps_toolchain file missing - please execute cps install before");
+        let cmakefile =  path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            "CMakeLists.txt"
+        );
+        if (!fse.existsSync(cmakefile))
+            throw new ValidationError("CMakeLists.txt file missing - please execute cps generate before");
+        let buildDir = path.join(
+            path.dirname(this.cpsFileManager.ymlFilePath),
+            this.cpsFileManager.config.buildDir,
+        );
+        return this.cmake.configureAndBuildTarget(cmakefile, buildDir, buildType,"doxy",toolchainfile);
     }
 
     public async newProject(

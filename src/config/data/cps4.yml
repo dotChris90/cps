@@ -1,0 +1,59 @@
+name: abc
+version: 1.2.3
+license: MIT
+author: CK
+url: blup
+description: blob
+importDir: import
+buildDir: build
+pkgDir: package
+deployDir: deploy
+topics:
+  - topic1
+conan:
+  options:
+    - name: shared
+      values:
+        - true
+        - false
+      default: false
+    - name: fPIC
+      values:
+        - true
+        - false
+      default: true
+  packages:
+    - name: fmt
+      version: 8.1.1
+      options:
+        header_only: true
+  tools:
+    - name: doxygen
+      version: 1.9.4
+      separate: true
+    - name: cppcheck
+      version: 2.7.5
+      separate: false
+pip:
+  tools:
+    - name: conan
+      version: 1.55
+    - name: metrixpp
+      version: 1.7.1
+cmake:
+  packages:
+    - fmt
+  executables:
+    - name: main
+      srcs:
+        - src/main.cpp
+      links:
+        - Hello
+  libraries:
+    - name: Hello
+      srcs:
+        - src/Greeter.cpp
+      incs:
+        - src/Greeter.hpp
+      links:
+        - fmt::fmt

@@ -1,6 +1,11 @@
+import { Item } from "./item";
 import { TextInput } from "./text-input";
 
 export class FakeInput implements TextInput {
+    
+    editLists(question: string, items: Item[]): Promise<Item[]> {
+        throw new Error("Method not implemented.");
+    }
 
     async readInput(question: string, placeHolder: string): Promise<string> {
         return placeHolder;

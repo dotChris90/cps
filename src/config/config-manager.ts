@@ -5,6 +5,8 @@ import { Option } from "./option";
 import { Tool } from "./tool";
 import { Library } from "./library";
 import { Pip } from "./pip";
+import {Utils} from '../utils/utils';
+import { link } from "fs-extra";
 
 export class ConfigManager {
   public config: CPSConfig;
@@ -33,6 +35,83 @@ export class ConfigManager {
     this.config.url = url;
     this.config.topics = topics;
   }
+
+  public getCMakeTargets() : Array<Library | Executable> {
+    let allTargets : Array<Library|Executable> = [];
+    this.config.cmake.executables.forEach(e => allTargets.push(e));
+    this.config.cmake.libraries.forEach(e => allTargets.push(e));
+    return allTargets;
+  }
+
+  public doesTargetHasSrc(target : string,src : string) {
+    return this.getCMakeTargets()
+               .filter(t => t.name === target)[0]
+               .srcsAsSet().has(src);
+  }
+
+  public doesLibHasInc(target : string,inc : string) {
+    return this.config.cmake.libraries
+               .filter(t => t.name === target)[0]
+               .incsAsSet().has(inc);
+  }
+
+  public setSrcs2Target(target : string, srcs : string[]) {
+    const targetObj = this.getCMakeTargets().filter(t => t.name === target)[0];
+    const srcSet = new Set<string>(srcs);
+    targetObj.srcs = [];
+    srcSet.forEach(src => targetObj.srcs.push(src));
+  }
+
+  public setIncs2Lib(target : string, incs : string[]) {
+    const targetObj = this.config.cmake.libraries
+                          .filter(t => t.name === target)[0];
+    const incSet = new Set<string>(incs);
+    targetObj.incs = [];
+    incSet.forEach(inc => targetObj.incs.push(inc));                    
+  }
+
+  public validateSrcsInTargets(srcs : string[]) : void {
+    let srcsSet = new Set<string>(srcs);
+    let targets = this.getCMakeTargets();
+    targets.forEach(t => {
+      let missing = Utils.notIn(t.srcsAsSet(),srcsSet);
+      missing.forEach(s => {
+        const index = t.srcs.indexOf(s, 0);
+        if (index > -1) {
+          t.srcs.splice(index, 1);
+        }
+      });
+    });
+  }
+
+  public validateLinksInTargets(links : string[]) : void {
+    let linksSet = new Set<string>(links);
+    let targets = this.getCMakeTargets();
+    targets.forEach(t => {
+      let missing = Utils.notIn(t.linksAsSet(),linksSet);
+      missing.forEach(s => {
+        const index = t.links.indexOf(s, 0);
+        if (index > -1) {
+          t.links.splice(index, 1);
+        }
+      });
+    });
+  }
+
+  public validateIncsInLibs(incs : string[]) : void {
+    let incsSet = new Set<string>(incs);
+    let targets = this.config.cmake.libraries;
+    targets.forEach(t => {
+      let missing = Utils.notIn(t.incsAsSet(),incsSet);
+      missing.forEach(s => {
+        const index = t.incs.indexOf(s, 0);
+        if (index > -1) {
+          t.incs.splice(index, 1);
+        }
+      });
+    });
+  }
+
 
   addPipPackage(name: string, version: string) {
     if (this.config.pip.tools.filter((e) => e.name === name).length === 0) {
@@ -114,42 +193,12 @@ export class ConfigManager {
     }
   }
 
-  rmCMakeExeSrc(name: string, src: string) {
-    const exe = this.config.cmake.executables.filter((e) => e.name === name)[0];
-    const idx = exe.srcs.indexOf(src);
-    if (idx > -1) exe.srcs.splice(idx, 1);
-  }
-
-  rmCMakeExeLink(name: string, link: string) {
-    const exe = this.config.cmake.executables.filter((e) => e.name === name)[0];
-    const idx = exe.links.indexOf(link);
-    if (idx > -1) exe.links.splice(idx, 1);
-  }
-
   rmCMakeLib(name: string) {
     if (this.config.cmake.libraries.filter((e) => e.name === name).length > 0) {
       const lib = this.config.cmake.libraries.filter((e) => e.name === name)[0];
       const idx = this.config.cmake.libraries.indexOf(lib, 0);
       this.config.cmake.libraries.splice(idx, 1);
     }
-  }
-
-  rmCMakeLibSrc(name: string, src: string) {
-    const lib = this.config.cmake.libraries.filter((e) => e.name === name)[0];
-    const idx = lib.srcs.indexOf(src);
-    if (idx > -1) lib.srcs.splice(idx, 1);
-  }
-
-  rmCMakeLibLink(name: string, link: string) {
-    const lib = this.config.cmake.libraries.filter((e) => e.name === name)[0];
-    const idx = lib.links.indexOf(link);
-    if (idx > -1) lib.links.splice(idx, 1);
-  }
-
-  rmCMakeLibInc(name: string, inc: string) {
-    const lib = this.config.cmake.libraries.filter((e) => e.name === name)[0];
-    const idx = lib.incs.indexOf(inc);
-    if (idx > -1) lib.incs.splice(idx, 1);
   }
 
   addConanPackage(

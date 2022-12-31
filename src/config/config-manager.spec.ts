@@ -28,10 +28,6 @@ describe("config-manager", () => {
       configManager.addCMakeExeLink("main", "a::a");
       expect(cpsObj.cmake.executables[0].srcs.length).toBe(2);
       expect(cpsObj.cmake.executables[0].links.length).toBe(1);
-      configManager.rmCMakeExeSrc("main", "src/greet.cpp");
-      configManager.rmCMakeExeLink("main", "a::a");
-      expect(cpsObj.cmake.executables[0].srcs.length).toBe(1);
-      expect(cpsObj.cmake.executables[0].links.length).toBe(0);
       configManager.rmCMakeExe("main");
       expect(cpsObj.cmake.executables.length).toBe(0);
 
@@ -49,10 +45,6 @@ describe("config-manager", () => {
       configManager.addCMakeLibLink("main", "a::a");
       expect(cpsObj.cmake.libraries[0].srcs.length).toBe(2);
       expect(cpsObj.cmake.libraries[0].links.length).toBe(1);
-      configManager.rmCMakeLibSrc("main", "src/greet.cpp");
-      configManager.rmCMakeLibLink("main", "a::a");
-      expect(cpsObj.cmake.libraries[0].srcs.length).toBe(1);
-      expect(cpsObj.cmake.libraries[0].links.length).toBe(0);
       configManager.rmCMakeLib("main");
       expect(cpsObj.cmake.libraries.length).toBe(0);
     });
